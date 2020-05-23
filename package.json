@@ -1,6 +1,6 @@
 {
   "name": "@humusities/node-webdav",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Node interface to the WebDAV handler module for Caddy. Includes Caddy binary.",
   "main": "index.js",
   "type": "module",
