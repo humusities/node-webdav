@@ -2,6 +2,8 @@ import { spawn } from "child_process";
 import net from "net";
 import http from "http";
 import path from "path";
+import { fileURLToPath } from "url";
+import { platform } from "os";
 
 const portAvailable = (port) =>
   new Promise((resolve) => {
@@ -77,10 +79,14 @@ const createConfig = (root, port) => ({
   },
 });
 
-export default (executable, root) =>
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export default (
+  root,
+  executableDir = path.join(__dirname, "bin", platform())
+) =>
   portAvailable(2019)
     .then(async (available) => {
-      if (available) await startCaddy(executable);
+      if (available) await startCaddy(executableDir);
       else console.warn(":2019 in use, trying anyway...");
     })
     .then(() => portAvailable(undefined))

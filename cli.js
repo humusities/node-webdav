@@ -1,15 +1,10 @@
 #!/usr/bin/env node
-import path from "path";
-import { platform } from "os";
-
 import createWebdav from "./index.js";
-
-const executable = path.join("bin", platform());
 
 function cli(command, ...args) {
   const actions = {
-    [undefined]: () => createWebdav(executable, ".").then(console.log),
-    create: () => createWebdav(executable, args[0] || ".").then(console.log),
+    [undefined]: () => createWebdav(".").then(console.log),
+    create: () => createWebdav(args[0] || ".").then(console.log),
   };
 
   if (command in actions) actions[command]();
