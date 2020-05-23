@@ -1,0 +1,16 @@
+{
+  "name": "@humusities/node-webdav",
+  "version": "0.0.1",
+  "description": "Node interface to the WebDAV handler module for Caddy. Includes Caddy binary.",
+  "main": "index.js",
+  "type": "module",
+  "repository": "git@github.com:humusities/node-webdav.git",
+  "author": "Elias Rhouzlane",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "webdav": "./cli.js"
+  }
+}

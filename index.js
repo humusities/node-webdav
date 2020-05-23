@@ -85,7 +85,6 @@ export default (executable, root) =>
     })
     .then(() => portAvailable(undefined))
     .then((port) => {
-      console.log(port);
       const config = JSON.stringify(createConfig(root, port));
       const options = {
         host: "localhost",
@@ -108,4 +107,8 @@ export default (executable, root) =>
         req.end();
       });
     })
-    .then((port) => ({ port }));
+    .then((port, host = "localhost") => ({
+      host,
+      port,
+      url: `http://${host}:${port}`,
+    }));
