@@ -56,28 +56,61 @@ const startCaddy = (executable) => {
   });
 };
 
-const createConfig = (root, port) => ({
+const createWebdavConfig = (root, port) => ({
+  listen: [`:${port}`],
+  routes: [
+    {
+      handle: [
+        {
+          handler: "headers",
+          response: {
+            deferred: true,
+            set: {
+              "Access-Control-Allow-Origin": ["*"],
+            },
+          },
+        },
+        {
+          handler: "webdav",
+          root,
+        },
+      ],
+      match: [{ path: ["/*"] }],
+    },
+  ],
+});
+
+const createConfig = (servers) => ({
   apps: {
     http: {
-      servers: {
-        srv0: {
-          listen: [`:${port}`],
-          routes: [
-            {
-              handle: [
-                {
-                  handler: "webdav",
-                  root,
-                },
-              ],
-              match: [{ path: ["/*"] }],
-            },
-          ],
-        },
-      },
+      servers,
     },
   },
 });
+
+const postConfig = (config) => {
+  const strConfig = JSON.stringify(config);
+  const options = {
+    host: "localhost",
+    port: 2019,
+    path: "/load",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": strConfig.length,
+    },
+  };
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) =>
+      res.statusCode === 200
+        ? resolve(true)
+        : reject(new Error(`Status Code: ${res.statusCode}`))
+    );
+    req.on("error", reject);
+    req.write(strConfig);
+    req.end();
+  });
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default (
@@ -91,30 +124,14 @@ export default (
     })
     .then(() => portAvailable(undefined))
     .then((port) => {
-      const config = JSON.stringify(createConfig(root, port));
-      const options = {
-        host: "localhost",
-        port: 2019,
-        path: "/load",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Content-Length": config.length,
-        },
-      };
-      return new Promise((resolve, reject) => {
-        const req = http.request(options, (res) =>
-          res.statusCode === 200
-            ? resolve(port)
-            : reject(new Error(`Status Code: ${res.statusCode}`))
-        );
-        req.on("error", reject);
-        req.write(config);
-        req.end();
-      });
+      postConfig(createConfig({ srv0: createWebdavConfig(root, port) }));
+      return port;
     })
     .then((port, host = "localhost") => ({
       host,
       port,
       url: `http://${host}:${port}`,
+      destroy: () => {
+        postConfig(createConfig());
+      },
     }));
